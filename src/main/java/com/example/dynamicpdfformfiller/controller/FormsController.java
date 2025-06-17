@@ -32,16 +32,32 @@ class FormsController {
 
     @PostMapping("/fill")
     public ResponseEntity<byte[]> fillPdf(
-            @RequestParam String fileId,
-            @RequestBody Map<String, String> formData) {
-        byte[] filledPdf = pdfService.fillPdf(fileId, formData);
+            @RequestParam(required = false) String fileId,
+            @RequestBody Map<String, String> data) {
         
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDispositionFormData("attachment", "filled-form.pdf");
+        if (fileId == null || fileId.isEmpty()) {
+            throw new RuntimeException("File ID is required");
+        }
         
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(filledPdf);
+        try {
+            byte[] filledPdf = pdfService.fillPdf(fileId, data);
+            
+            if (filledPdf == null || filledPdf.length == 0) {
+                throw new RuntimeException("PDF generation failed - empty result");
+            }
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", "filled-form.pdf");
+            headers.setContentLength(filledPdf.length);
+            
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(filledPdf);
+        } catch (Exception e) {
+            System.err.println("Error filling PDF: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to fill PDF: " + e.getMessage(), e);
+        }
     }
 }

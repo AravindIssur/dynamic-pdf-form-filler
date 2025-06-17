@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -107,24 +108,68 @@ public class PdfService {
                 throw new RuntimeException("No form found in PDF");
             }
 
-            formData.forEach((key, value) -> {
-                try {
-                    org.apache.pdfbox.pdmodel.interactive.form.PDField field = form.getField(key);
-                    if (field != null) {
-                        field.setValue(value);
-                    }
-                } catch (Exception e) {
-                    throw new RuntimeException("Error setting field value", e);
+            // Set need appearances before modifying fields
+            form.setNeedAppearances(true);
+
+            // Get all fields and their children
+            List<org.apache.pdfbox.pdmodel.interactive.form.PDField> allFields = new ArrayList<>();
+            form.getFields().forEach(field -> {
+                if (field instanceof PDNonTerminalField) {
+                    ((PDNonTerminalField) field).getChildren().forEach(allFields::add);
+                } else {
+                    allFields.add(field);
                 }
             });
 
-            // Flatten the form
-            form.flatten();
-            document.save(baos);
+            // Process each field
+            allFields.forEach(field -> {
+                String fieldName = field.getPartialName();
+                String value = formData.get(fieldName);
+                
+                if (value != null) {
+                    try {
+                        if (field instanceof PDTextField) {
+                            PDTextField textField = (PDTextField) field;
+                            textField.setValue(value);
+                        } else if (field instanceof PDButton) {
+                            PDButton button = (PDButton) field;
+                            String fieldType = button.getCOSObject().getNameAsString("FT");
+                            if (fieldType != null && fieldType.equals("Btn")) {
+                                String type = button.getCOSObject().getNameAsString("Type");
+                                if (type != null && type.equals("Check")) {
+                                    button.setValue(value.equals("true") ? "Yes" : "Off");
+                                } else if (type.equals("Radio")) {
+                                    button.setValue(value);
+                                }
+                            }
+                        } else if (field instanceof PDChoice) {
+                            PDChoice choice = (PDChoice) field;
+                            choice.setValue(value);
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Error setting field: " + fieldName + " - " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            });
 
-            return baos.toByteArray();
+            // Refresh appearances after setting all values
+            form.refreshAppearances();
+            
+            // Save the document
+            document.saveIncremental(baos);
+            
+            // Return the final byte array
+            byte[] result = baos.toByteArray();
+            if (result == null || result.length == 0) {
+                throw new RuntimeException("Failed to generate PDF - empty result");
+            }
+            return result;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to fill PDF", e);
+            System.err.println("Error filling PDF: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to fill PDF: " + e.getMessage(), e);
+        }
         }
     }
 }
