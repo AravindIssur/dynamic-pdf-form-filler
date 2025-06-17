@@ -1,0 +1,69 @@
+# Java
+*.class
+*.log
+*.war
+*.ear
+*.nar
+*.rar
+*.sar
+*.jar
+*.zip
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar
+*.gz
+*.bz2
+*.xz
+*.rar
+*.7z
+*.dmg
+*.iso
+*.bin
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+*.o
+*.obj
+*.pdb
+*.ilk
+*.idb
+*.exp
+
+# Maven
+.mvnw
+.mvnw.cmd
+mvnw
+mvnw.cmd
+!.mvn
+!.mvn/wrapper
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+!.mvn/wrapper/maven-wrapper-main.jar
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.settings/
+.project
+.classpath
+.factorypath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+build/
+target/
+node_modules/
+
+# Environment files
+.env
+.env.*
+!env.example
