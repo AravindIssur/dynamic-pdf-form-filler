@@ -68,3 +68,44 @@ npm run dev
 ## License
 
 MIT License
+
+=========================================================================
+
+Here are the requirements to run this project on another system:
+
+System Requirements:
+Operating System: Any (Windows, macOS, Linux)
+Minimum RAM: 4GB recommended
+Minimum Disk Space: 1GB free space
+Software Requirements:
+Java 21 or higher (OpenJDK recommended)
+Maven (latest version)
+Node.js (latest LTS version)
+npm (comes with Node.js)
+Development Tools (optional but recommended):
+IDE (IntelliJ IDEA, Eclipse, or VS Code)
+Git (for version control)
+Steps to Run the Project:
+
+# 1. Clone the repository
+git clone https://github.com/AravindIssur/dynamic-pdf-form-filler.git
+cd dynamic-pdf-form-filler
+
+# 2. Build and run the backend
+# First time setup
+mvn clean install
+
+# Run the backend
+mvn spring-boot:run
+
+# 3. In a new terminal, navigate to frontend directory
+cd frontend
+
+# Install frontend dependencies
+npm install
+
+# Start the frontend development server
+npm run dev
+
+
+
